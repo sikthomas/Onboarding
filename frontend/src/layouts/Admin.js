@@ -67,7 +67,7 @@ const Admin = (props) => {
   routes={routes}
   logo={{
     innerLink: "/admin/view_form",
-    text: "KYC ONBOARDING",
+    text: "ONBOARDING SYSTEM",
   }}
 />
       <div className="main-content" ref={mainContent}>

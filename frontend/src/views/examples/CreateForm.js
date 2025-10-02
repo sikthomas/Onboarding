@@ -1,93 +1,70 @@
-/*!
-=========================================================
-* Argon Dashboard React - v1.2.4
-=========================================================
-*/
-
 import React, { useState } from "react";
-import {
-  Button,
-  Card,
-  CardHeader,
-  CardBody,
-  Container,
-  Row,
-  Col,
-  Form,
-  FormGroup,
-  Input,
-  Label,
-} from "reactstrap";
+import {Button,Card,CardHeader,CardBody,Container,Row,Col,Form,FormGroup,Input,Label} from "reactstrap";
 import Header from "components/Headers/Header.js";
 import { authFetch } from "utils/authFetch";
-
 
 const CreateForm = () => {
   const [formName, setFormName] = useState("");
   const [formSlug, setFormSlug] = useState("");
   const [description, setDescription] = useState("");
-
-  // 🔹 Sections (each with fields)
   const [sections, setSections] = useState([]);
 
-  // 🔹 Temp state for creating new section
-  const [newSection, setNewSection] = useState({
-    title: "",
-    description: "",
-  });
-
-  // 🔹 Temp state for adding a field
+  const [newSection, setNewSection] = useState({ title: "", description: "" });
   const [newField, setNewField] = useState({
     label: "",
     field_type: "text",
     required: false,
+    options: [],
   });
+  const [newOption, setNewOption] = useState("");
 
-  // ➕ Add a new section
+  // Add section
   const addSection = () => {
     if (!newSection.title.trim()) return alert("Section title is required");
-    setSections([
-      ...sections,
-      { ...newSection, order: sections.length + 1, fields: [] },
-    ]);
+    setSections([...sections, { ...newSection, fields: [] }]);
     setNewSection({ title: "", description: "" });
   };
 
-  // 🗑 Remove section
+  // Remove section
   const removeSection = (index) => {
-    const updated = sections.filter((_, i) => i !== index);
-    setSections(updated);
+    setSections(sections.filter((_, i) => i !== index));
   };
 
-  // ➕ Add field to a specific section
+  // Add option to checkbox/radio field
+  const addOptionToField = () => {
+    if (!newOption.trim()) return;
+    setNewField({
+      ...newField,
+      options: [...(newField.options || []), { value: newOption.trim(), label: newOption.trim() }],
+    });
+    setNewOption("");
+  };
+
+  // Add field to section
   const addFieldToSection = (sectionIndex) => {
     if (!newField.label.trim()) return alert("Field label is required");
+    if ((newField.field_type === "checkbox" || newField.field_type === "radio") && newField.options.length === 0) {
+      return alert("Options are required for checkbox/radio fields");
+    }
+
     const updated = [...sections];
     updated[sectionIndex].fields.push({ ...newField });
     setSections(updated);
-    setNewField({ label: "", field_type: "text", required: false });
+
+    setNewField({ label: "", field_type: "text", required: false, options: [] });
+    setNewOption("");
   };
 
-  // 🗑 Remove a field from a section
   const removeFieldFromSection = (sectionIndex, fieldIndex) => {
     const updated = [...sections];
-    updated[sectionIndex].fields = updated[sectionIndex].fields.filter(
-      (_, i) => i !== fieldIndex
-    );
+    updated[sectionIndex].fields.splice(fieldIndex, 1);
     setSections(updated);
   };
 
-  // 💾 Submit form
+  // Submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const payload = {
-      name: formName,
-      slug: formSlug,
-      description,
-      sections,
-    };
-
+    const payload = { name: formName, slug: formSlug, description, sections };
     const token = localStorage.getItem("access");
 
     try {
@@ -99,14 +76,10 @@ const CreateForm = () => {
         },
         body: JSON.stringify(payload),
       });
-
       const data = await response.json();
       if (response.ok) {
         alert("✅ Form created successfully!");
-        setFormName("");
-        setFormSlug("");
-        setDescription("");
-        setSections([]);
+        setFormName(""); setFormSlug(""); setDescription(""); setSections([]);
       } else {
         alert("❌ Error: " + JSON.stringify(data));
       }
@@ -119,199 +92,110 @@ const CreateForm = () => {
   return (
     <>
       <Header />
-
       <Container className="mt--7" fluid>
         <Row>
-          <Col xl="10" className="mb-5 mb-xl-0 mx-auto">
+          <Col xl="10" className="mx-auto">
             <Card className="shadow">
               <CardHeader className="bg-transparent">
-                <h3 className="mb-0">Create a New Dynamic Form</h3>
+                <h3>Create a New Dynamic Form</h3>
               </CardHeader>
-
               <CardBody>
                 <Form onSubmit={handleSubmit}>
-                  {/* 🧱 Basic Form Info */}
+                  {/* Basic form info */}
                   <FormGroup>
                     <Label>Form Name</Label>
-                    <Input
-                      type="text"
-                      value={formName}
-                      onChange={(e) => setFormName(e.target.value)}
-                      placeholder="e.g. Onboarding Form"
-                      required
-                    />
+                    <Input type="text" value={formName} onChange={e => setFormName(e.target.value)} placeholder="Onboarding Form" required />
                   </FormGroup>
-
                   <FormGroup>
                     <Label>Slug</Label>
-                    <Input
-                      type="text"
-                      value={formSlug}
-                      onChange={(e) => setFormSlug(e.target.value)}
-                      placeholder="onboarding-form"
-                    />
+                    <Input type="text" value={formSlug} onChange={e => setFormSlug(e.target.value)} placeholder="onboarding-form" />
                   </FormGroup>
-
                   <FormGroup>
                     <Label>Description</Label>
-                    <Input
-                      type="textarea"
-                      rows="3"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Describe this form"
-                    />
+                    <Input type="textarea" rows="3" value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe this form" />
                   </FormGroup>
-
                   <hr />
 
-                  {/* 🧩 Add Section */}
-                  <h4 className="mt-4">Add Section</h4>
+                  {/* Add Section */}
+                  <h4>Add Section</h4>
                   <Row className="align-items-end">
                     <Col md="5">
                       <Label>Section Title</Label>
-                      <Input
-                        type="text"
-                        value={newSection.title}
-                        onChange={(e) =>
-                          setNewSection({
-                            ...newSection,
-                            title: e.target.value,
-                          })
-                        }
-                        placeholder="Personal Information"
-                      />
+                      <Input type="text" value={newSection.title} onChange={e => setNewSection({ ...newSection, title: e.target.value })} placeholder="Personal Info" />
                     </Col>
                     <Col md="5">
                       <Label>Section Description</Label>
-                      <Input
-                        type="text"
-                        value={newSection.description}
-                        onChange={(e) =>
-                          setNewSection({
-                            ...newSection,
-                            description: e.target.value,
-                          })
-                        }
-                        placeholder="Describe this section"
-                      />
+                      <Input type="text" value={newSection.description} onChange={e => setNewSection({ ...newSection, description: e.target.value })} placeholder="Describe this section" />
                     </Col>
-                    <Col md="2" className="text-right">
-                      <Button color="primary" onClick={addSection}>
-                        + Add Section
-                      </Button>
+                    <Col md="2">
+                      <Button color="primary" onClick={addSection}>+ Add Section</Button>
                     </Col>
                   </Row>
 
-                  {/* 🧭 List Sections */}
-                  <div className="mt-4">
-                    {sections.map((section, sIndex) => (
-                      <Card key={sIndex} className="p-3 mb-4 shadow-sm">
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                          <h5 className="mb-0">
-                            {section.title}{" "}
-                            <small className="text-muted">
-                              ({section.fields.length} fields)
-                            </small>
-                          </h5>
-                          <Button
-                            color="danger"
-                            size="sm"
-                            onClick={() => removeSection(sIndex)}
-                          >
-                            Remove Section
-                          </Button>
-                        </div>
-                        <p className="text-muted">{section.description}</p>
+                  {/* List Sections */}
+                  {sections.map((section, sIndex) => (
+                    <Card key={sIndex} className="mt-4 p-3 shadow-sm">
+                      <div className="d-flex justify-content-between">
+                        <h5>{section.title} ({section.fields.length} fields)</h5>
+                        <Button color="danger" size="sm" onClick={() => removeSection(sIndex)}>Remove Section</Button>
+                      </div>
+                      <p className="text-muted">{section.description}</p>
 
-                        {/* ➕ Add Field to Section */}
-                        <Row className="align-items-end">
-                          <Col md="4">
-                            <Label>Label</Label>
-                            <Input
-                              type="text"
-                              value={newField.label}
-                              onChange={(e) =>
-                                setNewField({
-                                  ...newField,
-                                  label: e.target.value,
-                                })
-                              }
-                              placeholder="e.g. First Name"
-                            />
+                      {/* Add Field */}
+                      <Row className="align-items-end">
+                        <Col md="4">
+                          <Label>Field Label</Label>
+                          <Input type="text" value={newField.label} onChange={e => setNewField({ ...newField, label: e.target.value })} placeholder="First Name" />
+                        </Col>
+                        <Col md="3">
+                          <Label>Field Type</Label>
+                          <Input type="select" value={newField.field_type} onChange={e => setNewField({ ...newField, field_type: e.target.value, options: [] })}>
+                            <option value="text">Text</option>
+                            <option value="number">Number</option>
+                            <option value="date">Date</option>
+                            <option value="email">Email</option>
+                            <option value="file">File Upload</option>
+                            <option value="radio">Radio</option>
+                            <option value="checkbox">Checkbox</option>
+                          </Input>
+                        </Col>
+                        <Col md="2">
+                          <Label>Required?</Label>
+                          <Input type="checkbox" checked={newField.required} onChange={e => setNewField({ ...newField, required: e.target.checked })} /> Yes
+                        </Col>
+                        <Col md="3">
+                          <Button color="primary" onClick={() => addFieldToSection(sIndex)}>+ Add Field</Button>
+                        </Col>
+                      </Row>
+
+                      {/* Options for checkbox/radio */}
+                      {(newField.field_type === "checkbox" || newField.field_type === "radio") && (
+                        <Row className="mt-2 align-items-end">
+                          <Col md="8">
+                            <Label>Option</Label>
+                            <Input type="text" value={newOption} onChange={e => setNewOption(e.target.value)} placeholder="Option text" />
                           </Col>
                           <Col md="4">
-                            <Label>Field Type</Label>
-                            <Input
-                              type="select"
-                              value={newField.field_type}
-                              onChange={(e) =>
-                                setNewField({
-                                  ...newField,
-                                  field_type: e.target.value,
-                                })
-                              }
-                            >
-                              <option value="text">Text</option>
-                              <option value="number">Number</option>
-                              <option value="date">Date</option>
-                              <option value="email">Email</option>
-                              <option value="select">Select</option>
-                              <option value="checkbox">Checkbox</option>
-                              <option value="file">File Upload</option>
-                            </Input>
-                          </Col>
-                          <Col md="3">
-                            <Label>Required?</Label>
-                            <Input
-                              type="checkbox"
-                              checked={newField.required}
-                              onChange={(e) =>
-                                setNewField({
-                                  ...newField,
-                                  required: e.target.checked,
-                                })
-                              }
-                            />{" "}
-                            <span>Yes</span>
-                          </Col>
-                          <Col md="1">
-                            <Button
-                              color="primary"
-                              onClick={() => addFieldToSection(sIndex)}
-                            >
-                              +
-                            </Button>
+                            <Button color="secondary" onClick={addOptionToField}>+ Add Option</Button>
                           </Col>
                         </Row>
+                      )}
 
-                        {/* 📋 List Fields */}
-                        <ul className="mt-3 list-unstyled">
-                          {section.fields.map((f, fIndex) => (
-                            <li key={fIndex} className="mb-2">
-                              <strong>{f.label}</strong> ({f.field_type}){" "}
-                              {f.required ? "✅ Required" : "❌ Optional"}{" "}
-                              <Button
-                                color="danger"
-                                size="sm"
-                                className="ml-2"
-                                onClick={() =>
-                                  removeFieldFromSection(sIndex, fIndex)
-                                }
-                              >
-                                Remove
-                              </Button>
-                            </li>
-                          ))}
-                        </ul>
-                      </Card>
-                    ))}
-                  </div>
+                      {/* List Fields */}
+                      <ul className="mt-3">
+                        {section.fields.map((f, fIndex) => (
+                          <li key={fIndex}>
+                            <strong>{f.label}</strong> ({f.field_type}) {f.required ? "✅" : "❌"}
+                            {(f.field_type === "checkbox" || f.field_type === "radio") && f.options && ` - Options: ${f.options.map(o => o.label).join(", ")}`}
+                            <Button color="danger" size="sm" className="ml-2" onClick={() => removeFieldFromSection(sIndex, fIndex)}>Remove</Button>
+                          </li>
+                        ))}
+                      </ul>
+                    </Card>
+                  ))}
 
                   <div className="text-right mt-4">
-                    <Button color="success" type="submit">
-                      💾 Save Form
-                    </Button>
+                    <Button color="success" type="submit">💾 Save Form</Button>
                   </div>
                 </Form>
               </CardBody>

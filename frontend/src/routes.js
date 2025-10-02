@@ -22,26 +22,27 @@ const allRoutes = [
     component: <ViewForms />,
     layout: "/admin",
   },
-    {
+{
   path: "/users",
   name: "Users",
-  icon: "ni ni-badge text-primary", // role/assignment icon
+  icon: "ni ni-single-02 text-primary", 
   component: <UsersList />,
   layout: "/admin",
   adminOnly: true,
 },
-  {
+{
   path: "/assign-role",
   name: "Assign Role",
-  icon: "ni ni-badge text-primary", // role/assignment icon
+  icon: "ni ni-settings-gear-65 text-warning", 
   component: <AssignRole />,
   layout: "/admin",
   adminOnly: true,
 },
+
   {
   path: "/create_form",
   name: "Create Form",
-  icon: "ni ni-collection text-success", // represents creating/collecting forms
+  icon: "ni ni-collection text-success", 
   component: <CreateForm />,
   layout: "/admin",
   adminOnly: true,

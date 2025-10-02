@@ -17,15 +17,26 @@ const Sidebar = (props) => {
   const closeCollapse = () => setCollapseOpen(false);
 
   const createLinks = (routes) => {
-    return routes.map((prop, key) => (
-      <NavItem key={key}>
-        <NavLink to={prop.layout + prop.path} tag={NavLinkRRD} onClick={closeCollapse}>
-          <i className={prop.icon} />
+  return routes.map((prop, key) => (
+    <NavItem key={key} className="mb-2">
+      <NavLink 
+        to={prop.layout + prop.path} 
+        tag={NavLinkRRD} 
+        onClick={closeCollapse}
+        className="d-flex align-items-center"
+      >
+        <i className={`${prop.icon} mr-2`} style={{ fontSize: "1.1rem" }} />
+        <span 
+          className="nav-link-text"
+          style={{ fontSize: "1.05rem", fontWeight: 600 }}
+        >
           {prop.name}
-        </NavLink>
-      </NavItem>
-    ));
-  };
+        </span>
+      </NavLink>
+    </NavItem>
+  ));
+};
+
 
   useEffect(() => {
     const fetchUser = async () => {

@@ -1,24 +1,5 @@
-/*!
-=========================================================
-* Assign Form Page - Argon Dashboard React
-=========================================================
-*/
-
 import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Card,
-  CardHeader,
-  CardBody,
-  Container,
-  Row,
-  Col,
-  Form,
-  FormGroup,
-  Input,
-  Label,
-  Spinner,
-} from "reactstrap";
+import {Button,Card,CardHeader,CardBody,Container,Row,Col,Form,FormGroup,Input,Label,Spinner} from "reactstrap";
 import Header from "components/Headers/Header.js";
 import { authFetch } from "utils/authFetch";
 import { useNavigate } from "react-router-dom";
